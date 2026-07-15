@@ -1,5 +1,5 @@
 // Povezava s Supabase
-const SUPABASE_URL = "https://cclrcudyegousjpllgjx.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://cclrcudyegousjpllgjx.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjbHJjdWR5ZWdvdXNqcGxsZ2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMDg0NzIsImV4cCI6MjA5OTY4NDQ3Mn0.SuHoj3lf0Sj2l0sDLYHd3A4PCPEGmmkkjxe3W6bAAiA";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -26,7 +26,7 @@ document.getElementById("zacni-kviz").addEventListener("click", async () => {
 
   // Pridobi vprašanja iz baze (vsa izbrane teme)
   const { data, error } = await supabaseClient
-    .from("vprasanja")
+    .from("Vprasanja")
     .select("*")
     .in("tema", izbraneTeme);
 
@@ -60,7 +60,7 @@ function prikaziVprasanje() {
     { crka: "a", tekst: v.odgovor_a },
     { crka: "b", tekst: v.odgovor_b },
     { crka: "c", tekst: v.odgovor_c },
-    { crka: "d", tekst: v.odgovor_d }
+    { crka: "č", tekst: v.odgovor_d }
   ];
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
