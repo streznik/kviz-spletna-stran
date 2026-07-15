@@ -60,7 +60,7 @@ function prikaziVprasanje() {
     { crka: "a", tekst: v.odgovor_a },
     { crka: "b", tekst: v.odgovor_b },
     { crka: "c", tekst: v.odgovor_c },
-    { crka: "č", tekst: v.odgovor_d }
+    { crka: "d", tekst: v.odgovor_d }
   ];
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
