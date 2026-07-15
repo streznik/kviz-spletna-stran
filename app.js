@@ -1,8 +1,10 @@
-// Povezava s Supabase
+// Povezava s Supabase - OPOMBA: URL BREZ /rest/v1/!
 const SUPABASE_URL = "https://cclrcudyegousjpllgjx.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjbHJjdWR5ZWdvdXNqcGxsZ2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMDg0NzIsImV4cCI6MjA5OTY4NDQ3Mn0.SuHoj3lf0Sj2l0sDLYHd3A4PCPEGmmkkjxe3W6bAAiA";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+console.log("✅ Skript se je naložil!"); // Debug
 
 // Globalne spremenljivke
 let izbraneTeme = [];
@@ -12,10 +14,17 @@ let trenutniIndex = 0;
 let odgovori = [];
 
 // Ko uporabnik klikne "Začni kviz"
-document.getElementById("zacni-kviz").addEventListener("click", async () => {
+const startButton = document.getElementById("zacni-kviz");
+console.log("🔘 Iskanje gumba:", startButton); // Debug
+
+startButton.addEventListener("click", async () => {
+  console.log("👆 Gumb kliknjen!"); // Debug
+  
   // Pridobi izbrane teme
   izbraneTeme = Array.from(document.querySelectorAll(".tema:checked"))
     .map(cb => cb.value);
+
+  console.log("📋 Izbrane teme:", izbraneTeme); // Debug
 
   if (izbraneTeme.length === 0) {
     alert("Izberi vsaj eno temo!");
@@ -23,16 +32,28 @@ document.getElementById("zacni-kviz").addEventListener("click", async () => {
   }
 
   steviloVprasanj = parseInt(document.getElementById("stevilo").value);
+  console.log("🔢 Število vprašanj:", steviloVprasanj); // Debug
 
-  // Pridobi vprašanja iz baze (vsa izbrane teme)
+  // Pridobi vprašanja iz baze
+  console.log("🌐 Povezava s Supabase..."); // Debug
+
   const { data, error } = await supabaseClient
-    .from("Vprasanja")
+    .from("Vprasanja")  // Ali "vprasanja"? Preveri ime tabele!
     .select("*")
     .in("tema", izbraneTeme);
 
+  console.log("📊 Rezultat baze:", data); // Debug
+  console.log("❌ Napaka:", error); // Debug
+
   if (error) {
     console.error("Napaka pri pridobivanju vprašanj:", error);
-    alert("Prišlo je do napake pri nalaganju vprašanj.");
+    alert("Napaka pri povezavi: " + error.message);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    console.warn("⚠️ Baza vrnila prazen rezultat!"); // Debug
+    alert("V bazi ni vprašanj za izbrane teme.");
     return;
   }
 
@@ -40,10 +61,7 @@ document.getElementById("zacni-kviz").addEventListener("click", async () => {
   const premesana = data.sort(() => Math.random() - 0.5);
   trenutnaVprasanja = premesana.slice(0, steviloVprasanj);
 
-  if (trenutnaVprasanja.length === 0) {
-    alert("V bazi ni vprašanj za izbrane teme.");
-    return;
-  }
+  console.log("✅ Našla sem", trenutnaVprasanja.length, "vprašanj"); // Debug
 
   // Preklopi na zaslon za kviz
   document.getElementById("pocetni-zaslon").style.display = "none";
@@ -53,67 +71,3 @@ document.getElementById("zacni-kviz").addEventListener("click", async () => {
   odgovori = [];
   prikaziVprasanje();
 });
-
-function prikaziVprasanje() {
-  const v = trenutnaVprasanja[trenutniIndex];
-  const mozniOdgovori = [
-    { crka: "a", tekst: v.odgovor_a },
-    { crka: "b", tekst: v.odgovor_b },
-    { crka: "c", tekst: v.odgovor_c },
-    { crka: "d", tekst: v.odgovor_d }
-  ];
-
-  document.getElementById("vprasanje-prikaz").innerHTML = `
-    <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
-    ${mozniOdgovori.map(m =>
-      `<label><input type="radio" name="odgovor" value="${m.crka}"> ${m.tekst}</label>`
-    ).join("")}
-  `;
-}
-
-// Gumb "Naprej"
-document.getElementById("naslednje-vprasanje").addEventListener("click", () => {
-  const izbran = document.querySelector('input[name="odgovor"]:checked');
-  if (!izbran) {
-    alert("Izberi odgovor!");
-    return;
-  }
-
-  const pravilen = trenutnaVprasanja[trenutniIndex].pravilen_odgovor;
-  odgovori.push({
-    vprasanje: trenutnaVprasanja[trenutniIndex],
-    izbranOdgovor: izbran.value,
-    pravilenOdgovor: pravilen
-  });
-
-  trenutniIndex++;
-
-  if (trenutniIndex >= trenutnaVprasanja.length) {
-    prikaziRezultate();
-  } else {
-    prikaziVprasanje();
-  }
-});
-
-function prikaziRezultate() {
-  document.getElementById("kviz-zaslon").style.display = "none";
-  document.getElementById("rezultat-zaslon").style.display = "block";
-
-  const pravilni = odgovori.filter(o => o.izbranOdgovor === o.pravilenOdgovor).length;
-
-  document.getElementById("koncni-rezultat").textContent =
-    `Pravilno si odgovoril/a na ${pravilni} od ${odgovori.length} vprašanj.`;
-
-  // Prikaži napačne odgovore
-  const napake = odgovori.filter(o => o.izbranOdgovor !== o.pravilenOdgovor);
-  const crke = { a: "odgovor_a", b: "odgovor_b", c: "odgovor_c", d: "odgovor_d" };
-
-  document.getElementById("napake-prikaz").innerHTML = napake.map(o => `
-    <div style="border:1px solid red; padding:10px; margin:10px 0;">
-      <strong>${o.vprasanje.vprasanje}</strong><br>
-      Tvoj odgovor: ${o.vprasanje[crke[o.izbranOdgovor]]}<br>
-      Pravilen odgovor: ${o.vprasanje[crke[o.pravilenOdgovor]]}
-    </div>
-  `).join("") || "<p>Vsi odgovori so bili pravilni! 🎉</p>";
-}
