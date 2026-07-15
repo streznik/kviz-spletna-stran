@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kviz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Kvizi iz zgodovine in fantazijskih knjig</h1>
+
+  <!-- Prikaz izbora tem in števila vprašanj -->
+  <div id="zacetni-zaslon">
+    <h2>Izberi teme:</h2>
+    <label><input type="checkbox" class="tema" value="zgodovina"> Zgodovina</label><br>
+    <label><input type="checkbox" class="tema" value="fantazijske knjige"> Fantazijske knjige</label><br>
+
+    <label for="stevilo">Število vprašanj:</label>
+    <select id="stevilo">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="15">15</option>
+    </select>
+    <br><br>
+    <button id="zacni-kviz">Začni kviz</button>
+  </div>
+
+  <!-- Prikaz vprašanj med kvizom -->
+  <div id="kviz-zaslon" style="display:none;">
+    <div id="vprasanje-prikaz"></div>
+    <button id="naslednje-vprasanje">Naprej</button>
+  </div>
+
+  <!-- Prikaz rezultatov -->
+  <div id="rezultat-zaslon" style="display:none;">
+    <h2 id="koncni-rezultat"></h2>
+    <div id="napake-prikaz"></div>
+    <button onclick="location.reload()">Ponovi kviz</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
