@@ -1,5 +1,5 @@
 // ✅ Nova povezava — kličemo Worker, ne Supabase!
-const WORKER_URL = "https://orange-cherry-7035.streznik.workers.dev/";
+const WORKER_URL = "https://orange-cherry-7035.streznik.workers.dev";
 
 console.log("✅ Skript se je naložil!");
 
