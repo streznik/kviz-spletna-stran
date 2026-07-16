@@ -62,8 +62,16 @@ startButton.addEventListener("click", async () => {
   trenutnaVprasanja = premesana.slice(0, steviloVprasanj);
 
   console.log("✅ Našla sem", trenutnaVprasanja.length, "vprašanj"); // Debug
+  console.log("Pregled ID-jev:");
+  console.log("pocetni-zaslon:", document.getElementById("pocetni-zaslon"));
+  console.log("kviz-zaslon:", document.getElementById("kviz-zaslon"));
+  console.log("vprasanje-prikaz:", document.getElementById("vprasanje-prikaz"));
+  console.log("naslednje-vprasanje:", document.getElementById("naslednje-vprasanje"));
+  console.log("rezultat-zaslon:", document.getElementById("rezultat-zaslon"));
+  console.log("koncni-rezultat:", document.getElementById("koncni-rezultat"));
+  console.log("napake-prikaz:", document.getElementById("napake-prikaz"));
 
-  // Preklopi na zaslon za kviz
+// Preklopi na zaslon za kviz
   document.getElementById("pocetni-zaslon").style.display = "none";
   document.getElementById("kviz-zaslon").style.display = "block";
 
