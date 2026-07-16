@@ -4,7 +4,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-console.log("✅ Skript se je naložil!");
+console.log("✅ Skripta se je naložila!");
 console.log("Supabase client:", supabaseClient ? "OK" : "NI OK");
 
 // Globalne spremenljivke
@@ -59,7 +59,6 @@ startButton.addEventListener("click", async () => {
 
   console.log("✅ Našla sem", trenutnaVprasanja.length, "vprašanj");
 
-  // Popravljeno: zacetni-zaslon namesto pocetni-zaslon
   document.getElementById("zacetni-zaslon").style.display = "none";
   document.getElementById("kviz-zaslon").style.display = "block";
 
