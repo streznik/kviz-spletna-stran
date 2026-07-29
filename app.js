@@ -143,6 +143,11 @@ function prikaziTrueFalse(v) {
 
 // ==================== ORDERING (VRSTNI RED) ====================
 function prikaziOrdering(v) {
+  console.log("ORDERING vprašanje:", v);
+  console.log("json_data:", v.json_data);
+  console.log("elements:", v.json_data?.elements);
+  console.log("typeof:", typeof v.json_data?.elements);
+
   let elementi = safeParseJson(v.json_data?.elements, []);
   
   if (elementi.length === 0) {
