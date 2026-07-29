@@ -579,3 +579,4 @@ function initMatching(leftItems, rightItems, parovi) {
       selectedLeft = null;
     });
   });
+}
