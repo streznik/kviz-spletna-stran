@@ -18,7 +18,7 @@ startButton.addEventListener("click", async () => {
   izbraneTeme = Array.from(document.querySelectorAll(".tema:checked")).map(cb => cb.value);
   console.log("📋 Izbrane teme:", izbraneTeme);
 
-  if (izbaneTeme.length === 0) {
+  if (izbraneTeme.length === 0) {
     alert("Izberi vsaj eno temo!");
     return;
   }
