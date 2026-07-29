@@ -327,9 +327,18 @@ function prikaziRezultate() {
     } else if (tip === 'true_false') {
       jePravilno = o.izbranOdgovor === o.pravilenOdgovor.toString();
     } else if (tip === 'ordering') {
+      console.log("=== ORDERING ===");
+      console.log("Izbran:", o.izbranOdgovor);
+      console.log("Pravilen:", o.pravilenOdgovor);
+
       const mojRed = o.izbranOdgovor.split(',');
       const pravilenRed = o.pravilenOdgovor.split(',');
+
+      console.log("mojRed:", mojRed);
+      console.log("pravilenRed:", pravilenRed);
+
       jePravilno = JSON.stringify(mojRed) === JSON.stringify(pravilenRed);
+    }
     } else if (tip === 'fill_text') {
       jePravilno = o.izbranOdgovor.toLowerCase() === o.pravilenOdgovor.toLowerCase();
     } else if (tip === 'matching') {
