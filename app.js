@@ -264,7 +264,9 @@ document.getElementById("naslednje-vprasanje").addEventListener("click", () => {
         alert("Ni elementov za urejanje!");
         return;
       }
-      izbranOdgovor = Array.from(orderingList).map(el => el.getAttribute("data-new-index")).join(',');
+      izbranOdgovor = Array.from(orderingList)
+        .map(el => el.getAttribute("data-original-index"))
+        .join(',');
       break;
 
     case 'fill_text':
