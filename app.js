@@ -555,24 +555,27 @@ function initMatching(leftItems, rightItems, parovi) {
 
   document.querySelectorAll('.matching-item[data-pair-id]').forEach(rightItem => {
     rightItem.addEventListener('click', () => {
-      if (selectedLeft && rightItem.dataset.pairId === selectedLeft.dataset.id) {
-        selectedLeft.style.backgroundColor = '#f0fff0';
-        selectedLeft.style.borderColor = '#4caf50';
-        rightItem.style.backgroundColor = '#f0fff0';
-        rightItem.style.borderColor = '#4caf50';
-      
-        window.matchingAnswers.push({
-          left: selectedLeft.textContent,
-          right: rightItem.textContent
-        });
 
-        selectedLeft = null;
-      } else {
-        if (selectedLeft) {
-          selectedLeft.style.borderColor = '#ddd';
-          selectedLeft.style.backgroundColor = '#fff';
-          selectedLeft = null;
-        }
+      if (!selectedLeft) {
+        return;
       }
+
+      selectedLeft.style.backgroundColor = '#fff';
+      selectedLeft.style.borderColor = '#4caf50';
+
+      rightItem.style.backgroundColor = '#fff';
+      rightItem.style.borderColor = '#4caf50';
+
+      window.matchingAnswers.push({
+        left: selectedLeft.textContent.trim(),
+        right: rightItem.textContent.trim()
+      });
+
+      console.log("MATCH DODAN:", {
+        left: selectedLeft.textContent.trim(),
+        right: rightItem.textContent.trim()
+      });
+
+      selectedLeft = null;
     });
   });
