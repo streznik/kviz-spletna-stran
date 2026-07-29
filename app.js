@@ -338,7 +338,6 @@ function prikaziRezultate() {
       console.log("pravilenRed:", pravilenRed);
 
       jePravilno = JSON.stringify(mojRed) === JSON.stringify(pravilenRed);
-    }
     } else if (tip === 'fill_text') {
       jePravilno = o.izbranOdgovor.toLowerCase() === o.pravilenOdgovor.toLowerCase();
     } else if (tip === 'matching') {
