@@ -260,13 +260,28 @@ document.getElementById("naslednje-vprasanje").addEventListener("click", () => {
 
     case 'ordering':
       const orderingList = document.querySelectorAll('#ordering-list .ordering-item');
+
       if (orderingList.length === 0) {
         alert("Ni elementov za urejanje!");
         return;
       }
+
+      console.log("ORDERING - elementi pred shranjevanjem:");
+      Array.from(orderingList).forEach((el, i) => {
+        console.log(
+          i,
+          el.textContent.trim(),
+          "original:",
+          el.getAttribute("data-original-index")
+        );
+      });
+
       izbranOdgovor = Array.from(orderingList)
         .map(el => el.getAttribute("data-original-index"))
         .join(',');
+
+      console.log("SHRANJEN ODGOVOR:", izbranOdgovor);
+
       break;
 
     case 'fill_text':
