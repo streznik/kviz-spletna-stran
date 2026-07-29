@@ -18,7 +18,7 @@ startButton.addEventListener("click", async () => {
   izbraneTeme = Array.from(document.querySelectorAll(".tema:checked")).map(cb => cb.value);
   console.log("📋 Izbrane teme:", izbraneTeme);
 
-  if (izbraneTeme.length === 0) {
+  if (izbraneTeme.length === 0) {  // ✅ POPRAVLJENO
     alert("Izberi vsaj eno temo!");
     return;
   }
@@ -27,7 +27,7 @@ startButton.addEventListener("click", async () => {
   console.log("🔢 Število vprašanj:", steviloVprasanj);
 
   console.log("🌐 Povezava z API-jem...");
-  const temeParam = izbraneTeme.join(",");
+  const temeParam = izbraneTeme.join(",");  // ✅ POPRAVLJENO
   const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
 
   console.log("📤 URL:", fullUrl);
@@ -173,16 +173,13 @@ function prikaziMatching(v) {
       <div id="matching-left" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
       <div id="matching-right" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
     </div>
-    <div style="text-align:center;">
-      <button id="check-matching-btn" style="background:#6d4aff; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">✅ Preveri povezave</button>
-    </div>
   `;
   document.getElementById("vprasanje-prikaz").innerHTML = html;
   
   initMatching(leftItems, rightItems, parovi);
 }
 
-// ==================== DROPDOWN (IZBOR IZ MENIJEA) ====================
+// ==================== DROPDOWN (IZBOR IZ MENIJA) ====================
 function prikaziDropdown(v) {
   const options = JSON.parse(v.json_data?.options || '[]');
   const placeholder = v.json_data?.placeholder_text || '';
@@ -351,13 +348,12 @@ function oblikujNapako(o) {
   const tip = o.vprasanje.tip_vprasanja || 'multiple_choice';
 
   if (tip === 'multiple_choice') {
-    // 🔧 POPRAVEK: Dodano "d" za nazaj kompatibilnost
     const crke_do_polja = {
       a: "odgovor_a",
       b: "odgovor_b",
       c: "odgovor_c",
       č: "odgovor_d",
-      d: "odgovor_d"  // ← KLJUČNO: "d" je zdaj tudi podprt!
+      d: "odgovor_d"
     };
 
     const polje_do_prikaza = {
@@ -376,7 +372,7 @@ function oblikujNapako(o) {
         pravilen: o.pravilenOdgovor,
         vprasanje: o.vprasanje 
       });
-      return `Tvoj odgovor: ${o.izbranOdgivor}<br>Pravilen odgovor: ${o.pravilenOdgovor}`;
+      return `Tvoj odgovor: ${o.izbranOdgovor}<br>Pravilen odgovor: ${o.pravilenOdgovor}`;
     }
 
     const tvojTekst = o.vprasanje[uporabniscePolje] || "ni definiran";
@@ -468,10 +464,7 @@ function updateOrderingIndices() {
 }
 
 // ==================== MATCHING HELPER ====================
-let matchingAnswers = [];
-
 function initMatching(leftItems, rightItems, parovi) {
-  matchingAnswers = [];
   window.matchingAnswers = [];
 
   let selectedLeft = null;
