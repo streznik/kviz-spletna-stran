@@ -18,7 +18,7 @@ startButton.addEventListener("click", async () => {
   izbraneTeme = Array.from(document.querySelectorAll(".tema:checked")).map(cb => cb.value);
   console.log("📋 Izbrane teme:", izbraneTeme);
 
-  if (izbraneTeme.length === 0) {
+  if (izbraneTeme.length === 0) {  // ✅ POPRAVLJENO!
     alert("Izberi vsaj eno temo!");
     return;
   }
@@ -97,7 +97,7 @@ function prikaziVprasanje(tip = 'multiple_choice') {
 
 // ✅ TUKAJ JE GLAVNA SPREMEMBA: a, b, c, Č namesto a, b, c, D
 function prikaziMultipleChoice(v) {
-  // Mape: uporabnik vidi → intern ID (da ne spremenimo Supabase podatkov)
+  // Mape: uporabnik vidi → interni ID (da ne spremenimo Supabase podatkov)
   const mapeCrk = [
     { uporabnik: "a", interni: "a", tekst: v.odgovor_a },
     { uporabnik: "b", interni: "b", tekst: v.odgovor_b },
@@ -124,7 +124,7 @@ function prikaziTrueFalse(v) {
 }
 
 function prikaziOrdering(v) {
-  const elementi = JSON.parse(v.ordering_elements || '[]');
+  const elementi = JSON.parse(v.json_data?.order_elements || '[]');
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     <p>${v.vprasanje}</p>
@@ -141,7 +141,7 @@ function prikaziOrdering(v) {
 }
 
 function prikaziMatching(v) {
-  const parovi = JSON.parse(v.matching_pairs || '[]');
+  const parovi = JSON.parse(v.json_data?.pairs || '[]');
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     <p>${v.vprasanje}</p>
@@ -271,15 +271,15 @@ function oblikujNapako(o) {
   const tip = o.vprasanje.tip_vprasanja || 'multiple_choice';
   
   if (tip === 'multiple_choice') {
-    const crke_za_prikaz = { a: "a", b: "b", c: "c", d: "č" };
+    const crk_za_prikaz = { a: "a", b: "b", c: "c", d: "č" };
     return `
-      Tvoj odgovor: ${chrk_za_prikaz[o.izbranOdgovor]} — ${o.vprasanje[crk_za_prikaz[o.izbranOdgovor]]}<br>
-      Pravilen odgovor: ${chrk_za_prikaz[o.pravilenOdgovor]} — ${o.vprasanje[crk_za_prikaz[o.pravilenOdgovor]]}
+      Tvoj odgovor: ${crk_za_prikaz[o.izbranOdgovor]} — ${o.vprasanje[crk_za_prikaz[o.izbranOdgovor]]}<br>
+      Pravilen odgovor: ${crk_za_prikaz[o.pravilenOdgovor]} — ${o.vprasanje[crk_za_prikaz[o.pravilenOdgovor]]}
     `;
   } else if (tip === 'true_false') {
     return `
-      Tvoj odgovor: ${o.izbranOdgovor === 'true' ? 'Drži' : 'Ne drží'}<br>
-      Pravilen odgovor: ${o.pravilenOdgovor === 'true' ? 'Drži' : 'Ne drží'}
+      Tvoj odgovor: ${o.izbranOdgovor === 'true' ? 'Drži' : 'Ne drži'}<br>
+      Pravilen odgovor: ${o.pravilenOdgovor === 'true' ? 'Drži' : 'Ne drži'}
     `;
   }
   return `Tvoj odgovor: ${o.izbranOdgovor}<br>Pravilen odgovor: ${o.pravilenOdgovor}`;
