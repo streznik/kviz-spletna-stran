@@ -560,7 +560,7 @@ function initMatching(leftItems, rightItems, parovi) {
         selectedLeft.style.borderColor = '#4caf50';
         rightItem.style.backgroundColor = '#f0fff0';
         rightItem.style.borderColor = '#4caf50';
-        
+      
         window.matchingAnswers.push({
           left: selectedLeft.textContent,
           right: rightItem.textContent
@@ -576,4 +576,3 @@ function initMatching(leftItems, rightItems, parovi) {
       }
     });
   });
-}
