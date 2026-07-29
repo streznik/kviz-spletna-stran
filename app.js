@@ -27,7 +27,7 @@ startButton.addEventListener("click", async () => {
   console.log("🔢 Število vprašanj:", steviloVprasanj);
 
   console.log("🌐 Povezava z API-jem...");
-  const temeParam = izbaneTeme.join(",");
+  const temeParam = izbraneTeme.join(",");
   const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
 
   console.log("📤 URL:", fullUrl);
