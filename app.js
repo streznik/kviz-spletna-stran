@@ -18,7 +18,7 @@ startButton.addEventListener("click", async () => {
   izbraneTeme = Array.from(document.querySelectorAll(".tema:checked")).map(cb => cb.value);
   console.log("📋 Izbrane teme:", izbraneTeme);
 
-  if (izbraneTeme.length === 0) {  // ✅ POPRAVLJENO
+  if (izbraneTeme.length === 0) {
     alert("Izberi vsaj eno temo!");
     return;
   }
@@ -27,7 +27,7 @@ startButton.addEventListener("click", async () => {
   console.log("🔢 Število vprašanj:", steviloVprasanj);
 
   console.log("🌐 Povezava z API-jem...");
-  const temeParam = izbraneTeme.join(",");  // ✅ POPRAVLJENO
+  const temeParam = izbraneTeme.join(",");
   const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
 
   console.log("📤 URL:", fullUrl);
@@ -68,6 +68,23 @@ startButton.addEventListener("click", async () => {
   }
 });
 
+// ==================== SAFE JSON PARSE HELPER ====================
+function safeParseJson(value, defaultValue) {
+  if (value === null || value === undefined) return defaultValue;
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'object') return value;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      console.error("Napaka pri parseanju JSON:", e);
+      return defaultValue;
+    }
+  }
+  return defaultValue;
+}
+
+// ==================== GLAVNA FUNCIJA ZA PRIKAZ VPRAŠANJA ====================
 function prikaziVprasanje() {
   const v = trenutnaVprasanja[trenutniIndex];
   const tip = v.tip_vprasanja || 'multiple_choice';
@@ -126,7 +143,13 @@ function prikaziTrueFalse(v) {
 
 // ==================== ORDERING (VRSTNI RED) ====================
 function prikaziOrdering(v) {
-  const elementi = JSON.parse(v.json_data?.elements || '[]');
+  let elementi = safeParseJson(v.json_data?.elements, []);
+  
+  if (elementi.length === 0) {
+    console.warn("Ordering vprašanje brez elementov!", v);
+    elementi = ["Napaka: Ni elementov"];
+  }
+
   const navodilo = "⚠️ <strong>Opozorilo:</strong> 1 = najstarejši dogodek, 4 = najmlajši dogodek.<br>Povleci elemente v pravilen kronološki vrstni red.";
 
   let html = `
@@ -160,7 +183,12 @@ function prikaziFillText(v) {
 
 // ==================== MATCHING (POVEŽI) ====================
 function prikaziMatching(v) {
-  const parovi = JSON.parse(v.json_data?.pairs || '[]');
+  let parovi = safeParseJson(v.json_data?.pairs, []);
+  
+  if (parovi.length === 0) {
+    console.warn("Matching vprašanje brez parov!", v);
+    parovi = [{left: "Napaka", right: "Ni parov"}];
+  }
   
   const leftItems = parovi.map((p, i) => ({ text: p.left, id: i })).sort(() => Math.random() - 0.5);
   const rightItems = parovi.map((p, i) => ({ text: p.right, pairId: i })).sort(() => Math.random() - 0.5);
@@ -181,7 +209,13 @@ function prikaziMatching(v) {
 
 // ==================== DROPDOWN (IZBOR IZ MENIJA) ====================
 function prikaziDropdown(v) {
-  const options = JSON.parse(v.json_data?.options || '[]');
+  let options = safeParseJson(v.json_data?.options, []);
+  
+  if (options.length === 0) {
+    console.warn("Dropdown vprašanje brez opcij!", v);
+    options = ["Napaka: Ni opcij"];
+  }
+
   const placeholder = v.json_data?.placeholder_text || '';
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
@@ -391,9 +425,9 @@ function oblikujNapako(o) {
       Pravilen odgovor: ${o.pravilenOdgovor === 'true' ? 'Drži ✅' : 'Ne drži ❌'}
     `;
   } else if (tip === 'ordering') {
-    const elementi = JSON.parse(o.vprasanje.json_data?.elements || '[]');
-    const mojRed = o.izbranOdgovor.split(',').map(x => elementi[x]);
-    const pravilenRed = o.pravilenOdgovor.split(',').map(x => elementi[x]);
+    const elementi = safeParseJson(o.vprasanje.json_data?.elements, ["?", "?", "?", "?"]);
+    const mojRed = o.izbranOdgovor.split(',').map(x => elementi[x] || "?");
+    const pravilenRed = o.pravilenOdgovor.split(',').map(x => elementi[x] || "?");
     return `
       Tvoj vrstni red: ${mojRed.join(' → ')}<br>
       Pravilen vrstni red: ${pravilenRed.join(' → ')}
