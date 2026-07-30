@@ -3,6 +3,13 @@ const WORKER_URL = "https://orange-cherry-7035.streznik.workers.dev";
 
 console.log("✅ Skript se je naložil!");
 
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 let izbraneTeme = [];
 let steviloVprasanj = 5;
 let trenutnaVprasanja = [];
@@ -446,8 +453,8 @@ function oblikujNapako(o) {
     const pravilenPrikaz = polje_do_prikaza[pravilnoPolje];
 
     return `
-      Tvoj odgovor: ${tvojPrikaz} — ${tvojTekst}<br>
-      Pravilen odgovor: ${pravilenPrikaz} — ${pravilenTekst}
+      Tvoj odgovor: ${tvojPrikaz} — ${escapeHtml(tvojTekst)}<br>
+      Pravilen odgovor: ${pravilenPrikaz} — ${escapeHtml(pravilenTekst)}
     `;
   } else if (tip === 'true_false') {
     return `
@@ -459,25 +466,25 @@ function oblikujNapako(o) {
     const mojRed = o.izbranOdgovor.split(',').map(x => elementi[x] || "?");
     const pravilenRed = o.pravilenOdgovor.split(',').map(x => elementi[x] || "?");
     return `
-      Tvoj vrstni red: ${mojRed.join(' → ')}<br>
-      Pravilen vrstni red: ${pravilenRed.join(' → ')}
+      Tvoj vrstni red: ${mojRed.map(x => escapeHtml(x)).join(' → ')}<br>
+      Pravilen vrstni red: ${pravilenRed.map(x => escapeHtml(x)).join(' → ')}
     `;
   } else if (tip === 'fill_text') {
     return `
-      Tvoj odgovor: <strong>${o.izbranOdgovor}</strong><br>
-      Pravilen odgovor: <strong>${o.pravilenOdgovor}</strong>
+      Tvoj odgovor: <strong>${escapeHtml(o.izbranOdgovor)}</strong><br>
+      Pravilen odgovor: <strong>${escapeHtml(o.pravilenOdgovor)}</strong>
     `;
   } else if (tip === 'matching') {
     const mojeParje = o.izbranOdgovor ? o.izbranOdgovor.split(';') : [];
     const pravilnoParje = o.pravilenOdgovor ? o.pravilenOdgovor.split(';') : [];
     return `
-      Tvoje povezave: ${mojeParje.join(', ')}<br>
-      Pravilne povezave: ${pravilnoParje.join(', ')}
+      Tvoje povezave: ${mojeParje.map(x => escapeHtml(x)).join(', ')}<br>
+      Pravilne povezave: ${pravilnoParje.map(x => escapeHtml(x)).join(', ')}
     `;
   } else if (tip === 'dropdown') {
     return `
-      Tvoj odgovor: <strong>${o.izbranOdgovor}</strong><br>
-      Pravilen odgovor: <strong>${o.pravilenOdgovor}</strong>
+      Tvoje povezave: ${mojeParje.map(x => escapeHtml(x)).join(', ')}<br>
+      Pravilne povezave: ${pravilnoParje.map(x => escapeHtml(x)).join(', ')}
     `;
   }
   return `Tvoj odgovor: ${o.izbranOdgovor}<br>Pravilen odgovor: ${o.pravilenOdgovor}`;
