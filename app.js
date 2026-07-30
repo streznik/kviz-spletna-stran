@@ -30,7 +30,7 @@ startButton.addEventListener("click", async () => {
     return;
   }
 
-  steviloVprasanj = parseInt(document.getElementById("stevilo").value);
+  steviloVprasanj = parseInt(document.getElementById("stevilo").value, 10);
   console.log("🔢 Število vprašanj:", steviloVprasanj);
 
   console.log("🌐 Povezava z API-jem...");
@@ -131,9 +131,9 @@ function prikaziMultipleChoice(v) {
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     ${mapeCrk.map(m =>
-      `<label><input type="radio" name="odgovor" value="${m.uporabnik}" data-interni="${m.interni}"> ${m.uporabnik}) ${m.tekst}</label>`
+      `<label><input type="radio" name="odgovor" value="${m.uporabnik}" data-interni="${m.interni}"> ${m.uporabnik}) ${escapeHtml(m.tekst)}</label>`
     ).join("")}
   `;
 }
@@ -142,7 +142,7 @@ function prikaziMultipleChoice(v) {
 function prikaziTrueFalse(v) {
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     <label><input type="radio" name="odgovor" value="drži" data-interni="true"> ✅ Drži</label><br>
     <label><input type="radio" name="odgovor" value="ne drži" data-interni="false"> ❌ Ne drži</label>
   `;
@@ -166,12 +166,12 @@ function prikaziOrdering(v) {
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${navodilo}</div>
     <div id="ordering-list" style="margin:15px 0;">
       ${elementi.map((el, idx) => 
         `<div class="ordering-item" draggable="true" data-original-index="${idx}" style="padding:12px; margin:8px 0; background:#fff; border-radius:6px; cursor:move; border:2px solid #ddd; font-weight:500;">
-          <span style="color:#666; margin-right:10px;">${idx + 1}.</span> ${el}
+          <span style="color:#666; margin-right:10px;">${idx + 1}.</span> ${escapeHtml(el)}
         </div>`
       ).join("")}
     </div>
@@ -187,7 +187,7 @@ function prikaziFillText(v) {
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${warning}</div>
     <input type="text" id="fill-input" placeholder="Vpiši odgovor..." style="width:100%; padding:12px; font-size:16px; border:2px solid #6d4aff; border-radius:8px; margin-top:10px;"/>
   `;
@@ -207,7 +207,7 @@ function prikaziMatching(v) {
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ <strong>Opozorilo:</strong> Klikni element na levi, nato klikni pripadajoč element na desni.</div>
     <div style="display:flex; justify-content:space-between; margin:20px 0; gap:20px;">
       <div id="matching-left" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
@@ -232,10 +232,10 @@ function prikaziDropdown(v) {
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
-    <p>${v.vprasanje}</p>
+    <p>${escapeHtml(v.vprasanje)}</p>
     <select id="dropdown-select" style="width:100%; padding:12px; font-size:16px; border:2px solid #6d4aff; border-radius:8px; margin-top:10px;">
-      <option value="">${placeholder || 'Izberi odgovor...'}</option>
-      ${options.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+      <option value="">${escapeHtml(placeholder || 'Izberi odgovor...')}</option>
+      ${options.map(opt => `<option value="${opt}">${escapeHtml(opt)}</option>`).join("")}
     </select>
   `;
 }
@@ -385,7 +385,7 @@ function prikaziRezultate() {
     html += '<div class="napake-container">';
     html += napake.map(o => `
       <div style="border:1px solid red; padding:10px; margin:10px 0; background:#fff3f3;">
-        <strong>${o.vprasanje.vprasanje}</strong><br>
+        <strong>${escapeHtml(o.vprasanje.vprasanje)}</strong>
         ${oblikujNapako(o)}
       </div>
     `).join("");
@@ -483,8 +483,8 @@ function oblikujNapako(o) {
     `;
   } else if (tip === 'dropdown') {
     return `
-      Tvoje povezave: ${mojeParje.map(x => escapeHtml(x)).join(', ')}<br>
-      Pravilne povezave: ${pravilnoParje.map(x => escapeHtml(x)).join(', ')}
+      Tvoj odgovor: <strong>${escapeHtml(o.izbranOdgovor)}</strong><br>
+      Pravilen odgovor: <strong>${escapeHtml(o.pravilenOdgovor)}</strong>
     `;
   }
   return `Tvoj odgovor: ${o.izbranOdgovor}<br>Pravilen odgovor: ${o.pravilenOdgovor}`;
@@ -527,56 +527,82 @@ function initOrdering() {
   });
 }
 
-function updateOrderingIndices() {
-  const items = document.querySelectorAll('#ordering-list .ordering-item');
-  items.forEach((item, idx) => {
-    item.setAttribute('data-new-index', idx);
-  });
-}
-
 // ==================== MATCHING HELPER ====================
 function initMatching(leftItems, rightItems, parovi) {
   window.matchingAnswers = [];
 
   let selectedLeft = null;
 
+  // Sledi kateri elementi so že povezani
+  const matchedLeft = new Set();
+  const matchedRight = new Set();
+
+  // ==================== RENDER LEVI ====================
   document.getElementById('matching-left').innerHTML = leftItems.map(i =>
-    `<div class="matching-item" data-id="${i.id}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${i.text}</div>`
+    `<div class="matching-item" data-id="${i.id}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${escapeHtml(i.text)}</div>`
   ).join("");
 
+  // ==================== RENDER DESNI ====================
   document.getElementById('matching-right').innerHTML = rightItems.map(i =>
-    `<div class="matching-item" data-pair-id="${i.pairId}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${i.text}</div>`
+    `<div class="matching-item" data-pair-id="${i.pairId}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${escapeHtml(i.text)}</div>`
   ).join("");
 
+  // ==================== KLIK NA LEVI ELEMENT ====================
   document.querySelectorAll('.matching-item[data-id]').forEach(item => {
     item.addEventListener('click', () => {
+      // Če je že povezan, razdruži ga!
+      if (matchedLeft.has(item)) {
+        razdruziMatch(item, 'left');
+        return;
+      }
+
+      // Ponastavi prejšnji izbor
       if (selectedLeft) {
         selectedLeft.style.borderColor = '#ddd';
         selectedLeft.style.backgroundColor = '#fff';
       }
+
       selectedLeft = item;
       item.style.borderColor = '#6d4aff';
       item.style.backgroundColor = '#f0f0ff';
     });
   });
 
+  // ==================== KLIK NA DESNI ELEMENT ====================
   document.querySelectorAll('.matching-item[data-pair-id]').forEach(rightItem => {
     rightItem.addEventListener('click', () => {
+      if (!selectedLeft) return;
 
-      if (!selectedLeft) {
+      // Če je desni že povezan, ne dovoli!
+      if (matchedRight.has(rightItem)) {
+        // Kratek vizualni signal
+        rightItem.style.borderColor = '#ff4444';
+        setTimeout(() => {
+          if (!matchedRight.has(rightItem)) {
+            rightItem.style.borderColor = '#ddd';
+          } else {
+            rightItem.style.borderColor = '#4caf50';
+          }
+        }, 500);
         return;
       }
 
-      selectedLeft.style.backgroundColor = '#fff';
+      // POVEŽI (dovoljeno kakršenkoli par!)
+      selectedLeft.style.backgroundColor = '#f0fff0';
       selectedLeft.style.borderColor = '#4caf50';
 
-      rightItem.style.backgroundColor = '#fff';
+      rightItem.style.backgroundColor = '#f0fff0';
       rightItem.style.borderColor = '#4caf50';
 
+      // Shrani match
       window.matchingAnswers.push({
         left: selectedLeft.textContent.trim(),
         right: rightItem.textContent.trim()
       });
+
+      // Označi kot povezan
+      matchedLeft.add(selectedLeft);
+      matchedRight.add(rightItem);
 
       console.log("MATCH DODAN:", {
         left: selectedLeft.textContent.trim(),
@@ -586,4 +612,41 @@ function initMatching(leftItems, rightItems, parovi) {
       selectedLeft = null;
     });
   });
+
+  // ==================== RAZDRUŽI MATCH ====================
+  function razdruziMatch(item, side) {
+    const leftText = item.textContent.trim();
+
+    // Najdi ta match v matchingAnswers
+    const matchIndex = window.matchingAnswers.findIndex(m => 
+      (side === 'left' && m.left === leftText) ||
+      (side === 'right' && m.right === leftText)
+    );
+
+    if (matchIndex !== -1) {
+      const match = window.matchingAnswers[matchIndex];
+
+      // Najdni oba elementa v DOM
+      const leftEl = Array.from(document.querySelectorAll('.matching-item[data-id]'))
+        .find(el => el.textContent.trim() === match.left);
+      const rightEl = Array.from(document.querySelectorAll('.matching-item[data-pair-id]'))
+        .find(el => el.textContent.trim() === match.right);
+
+      // Ponastavi barve
+      if (leftEl) {
+        leftEl.style.borderColor = '#ddd';
+        leftEl.style.backgroundColor = '#fff';
+        matchedLeft.delete(leftEl);
+      }
+      if (rightEl) {
+        rightEl.style.borderColor = '#ddd';
+        rightEl.style.backgroundColor = '#fff';
+        matchedRight.delete(rightEl);
+      }
+
+      // Odstrani iz matchingAnswers
+      window.matchingAnswers.splice(matchIndex, 1);
+      console.log("MATCH RAZDRUŽEN:", match);
+    }
+  }
 }
