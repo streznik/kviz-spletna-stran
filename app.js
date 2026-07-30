@@ -183,7 +183,7 @@ function prikaziOrdering(v) {
 
 // ==================== FILL TEXT (DOPOLENI TEKST) ====================
 function prikaziFillText(v) {
-  const warning = "⚠️ <strong>Pozor:</strong> Pazite na velike/male začetnice in bodite brez ločil (brez vejic, pike, itd.).";
+  const warning = "⚠️ <strong>Pozor:</strong> Pazite na velike in male začetnice ter ne uporabljajte ločil (vejic, pik itd.).";
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
@@ -208,7 +208,7 @@ function prikaziMatching(v) {
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     <p>${escapeHtml(v.vprasanje)}</p>
-    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ <strong>Opozorilo:</strong> Klikni element na levi, nato klikni pripadajoč element na desni.</div>
+    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ <strong>Opozorilo:</strong> Element na levi povežite s pripadajočim elementom na desni.</div>
     <div style="display:flex; justify-content:space-between; margin:20px 0; gap:20px;">
       <div id="matching-left" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
       <div id="matching-right" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
@@ -303,7 +303,7 @@ document.getElementById("naslednje-vprasanje").addEventListener("click", () => {
     case 'matching':
       const matches = window.matchingAnswers || [];
       if (matches.length === 0) {
-        alert("Poveži vse elemente!");
+        alert("Povežite vse elemente!");
         return;
       }
       izbranOdgovor = matches.map(m => `${m.left}:${m.right}`).join(';');
@@ -377,7 +377,7 @@ function prikaziRezultate() {
   });
 
   document.getElementById("koncni-rezultat").textContent =
-    `Pravilno si odgovoril/a na ${pravilni} od ${odgovori.length} vprašanj.`;
+    `Pravilno si odgovoril/-a na ${pravilni} od ${odgovori.length} vprašanj.`;
 
   let html = "";
 
