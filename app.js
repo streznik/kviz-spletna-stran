@@ -64,6 +64,77 @@ function toggleSubteme(checkbox) {
 // Naloži teme ob začetku
 window.addEventListener('DOMContentLoaded', napolniTemeTree);
 
+// ==================== START BUTTON CLICK HANDLER ====================
+const startButton = document.getElementById("zacni-kviz");
+console.log("🔘 Iskanje gumba:", startButton);
+
+if (startButton) {
+  startButton.addEventListener("click", async () => {
+    console.log("👆 Gumb kliknjen!");
+
+    izbraneTeme = Array.from(document.querySelectorAll(".tema:checked"))
+      .map(cb => cb.value);
+    
+    console.log("📋 Izbrane TEME:", izbraneTeme);
+
+    if (izbaneTeme.length === 0) {
+      alert("Izberi vsaj eno temo!");
+      return;
+    }
+
+    steviloVprasanj = parseInt(document.getElementById("stevilo").value, 10);
+    console.log("🔢 Število vprašanj:", steviloVprasanj);
+
+    console.log("🌐 Povezava z API-jem...");
+    const temeParam = izbaneTeme.join(",");
+    const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
+
+    console.log("📤 URL:", fullUrl);
+
+    try {
+      const response = await fetch(fullUrl);
+
+      console.log("📥 Status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Error body:", errorText);
+        prikaziNapako("Napaka pri strežniku: " + response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("📊 Polen odgovor:", data);
+
+      if (!data || data.length === 0) {
+        console.warn("⚠️ Ni vprašanj!");
+        prikaziNapako("V bazi ni vprašanj za izbrane teme.");
+        return;
+      }
+
+      if (data.error) {
+        console.error("❌ Napaka iz API:", data.error);
+        prikaziNapako("Napaka: " + data.error);
+        return;
+      }
+
+      trenutnaVprasanja = data;
+      console.log("✅ Našel sem", trenutnaVprasanja.length, "vprašanj");
+
+      document.getElementById("zacetni-zaslon").style.display = "none";
+      document.getElementById("kviz-zaslon").style.display = "block";
+
+      trenutniIndex = 0;
+      odgovori = [];
+      prikaziVprasanje();
+
+    } catch (err) {
+      console.error("❌ Caught exception:", err);
+      prikaziNapako("Napaka pri povezavi: " + err.message);
+    }
+  });
+}
+
 // ==================== SAFE JSON PARSE HELPER ====================
 function safeParseJson(value, defaultValue) {
   if (value === null || value === undefined) return defaultValue;
@@ -525,6 +596,27 @@ function initOrdering() {
       }
     });
   });
+}
+// DODAJ NA KONCU app.js pred initMatching():
+
+function prikaziNapako(opis) {
+  document.getElementById("kviz-zaslon").style.display = "none";
+  document.getElementById("rezultat-zaslon").style.display = "block";
+  
+  document.getElementById("koncni-rezultat").textContent = "Napaka pri nalaganju kviza";
+  
+  document.getElementById("napake-prikaz").innerHTML = `
+    <div style="background:#fff3f3; border:2px solid #ff4444; padding:20px; margin:20px 0; border-radius:8px;">
+      <strong>❌ Napaka:</strong> ${escapeHtml(opis)}<br><br>
+      <small style="color:#666;">Preveri konzolo (F12) za več informacij.</small>
+    </div>
+    
+    <div style="text-align:center; margin-top:25px;">
+      <button onclick="location.reload()" style="background:#6d4aff; color:white; border:none; padding:12px 30px; font-size:16px; border-radius:8px; cursor:pointer;">
+        🔄 Poskusi znova
+      </button>
+    </div>
+  `;
 }
 
 // ==================== MATCHING HELPER ====================
