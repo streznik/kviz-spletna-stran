@@ -72,12 +72,12 @@ if (startButton) {
   startButton.addEventListener("click", async () => {
     console.log("👆 Gumb kliknjen!");
 
-    izbraneTeme = Array.from(document.querySelectorAll(".tema:checked"))
+        izbraneTeme = Array.from(document.querySelectorAll(".tema:checked"))
       .map(cb => cb.value);
-    
+
     console.log("📋 Izbrane TEME:", izbraneTeme);
 
-    if (izbaneTeme.length === 0) {
+    if (izbraneTeme.length === 0) {
       alert("Izberi vsaj eno temo!");
       return;
     }
@@ -86,7 +86,7 @@ if (startButton) {
     console.log("🔢 Število vprašanj:", steviloVprasanj);
 
     console.log("🌐 Povezava z API-jem...");
-    const temeParam = izbaneTeme.join(",");
+    const temeParam = izbraneTeme.join(",");
     const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
 
     console.log("📤 URL:", fullUrl);
