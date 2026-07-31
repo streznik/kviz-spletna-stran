@@ -16,64 +16,53 @@ let trenutnaVprasanja = [];
 let trenutniIndex = 0;
 let odgovori = [];
 
-const startButton = document.getElementById("zacni-kviz");
-console.log("🔘 Iskanje gumba:", startButton);
-
-startButton.addEventListener("click", async () => {
-  console.log("👆 Gumb kliknjen!");
-
-  izbraneTeme = Array.from(document.querySelectorAll(".tema:checked")).map(cb => cb.value);
-  console.log("📋 Izbrane teme:", izbraneTeme);
-
-  if (izbraneTeme.length === 0) {
-    alert("Izberi vsaj eno temo!");
-    return;
-  }
-
-  steviloVprasanj = parseInt(document.getElementById("stevilo").value, 10);
-  console.log("🔢 Število vprašanj:", steviloVprasanj);
-
-  console.log("🌐 Povezava z API-jem...");
-  const temeParam = izbraneTeme.join(",");
-  const fullUrl = `${WORKER_URL}?teme=${encodeURIComponent(temeParam)}&stevilo=${steviloVprasanj}`;
-
-  console.log("📤 URL:", fullUrl);
-
+// ==================== HIERARHIČNA IZBIRA TEM ====================
+async function napolniTemeTree() {
   try {
-    const response = await fetch(fullUrl);
-
-    console.log("📥 Status:", response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ Error body:", errorText);
-      alert("Napaka pri strežniku: " + response.status);
-      return;
-    }
-
-    const data = await response.json();
-    console.log("📊 Polen odgovor:", data);
-
-    if (!data || data.length === 0) {
-      alert("V bazi ni vprašanj za izbrane teme.");
-      return;
-    }
-
-    trenutnaVprasanja = data;
-    console.log("✅ Našel sem", trenutnaVprasanja.length, "vprašanj");
-
-    document.getElementById("zacetni-zaslon").style.display = "none";
-    document.getElementById("kviz-zaslon").style.display = "block";
-
-    trenutniIndex = 0;
-    odgovori = [];
-    prikaziVprasanje();
-
+    const response = await fetch(`${WORKER_URL}/themes`);
+    const temi = await response.json();
+    
+    let html = '<h3>Izberi temo:</h3>';
+    
+    temi.filter(t => t.parent_id === null).forEach(glavnaTema => {
+      html += `
+        <div class="tema-group" style="margin:10px 0;">
+          <label style="cursor:pointer; font-weight:bold;">
+            <input type="checkbox" class="glavna-tema" data-id="${glavnaTema.id}" onchange="toggleSubteme(this)">
+            ${glavnaTema.ime} (+)
+          </label>
+          <div class="subteme-container" style="margin-left:20px; display:none;" data-parent="${glavnaTema.id}">
+            ${temi.filter(t => t.parent_id === glavnaTema.id).map(sub => `
+              <label style="cursor:pointer; display:block; padding:5px 0;">
+                <input type="checkbox" class="subtema tema" value="${sub.skratka}">
+                &nbsp;${escapeHtml(sub.ime)}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+    
+    document.getElementById('teme-tree').innerHTML = html;
   } catch (err) {
-    console.error("❌ Caught exception:", err);
-    alert("Napaka pri povezavi: " + err.message);
+    console.error("Napaka pri nalaganju tem:", err);
+    document.getElementById('teme-tree').innerHTML = '<p>Napaka pri nalaganju tem</p>';
   }
-});
+}
+
+function toggleSubteme(checkbox) {
+  const container = document.querySelector(`.subteme-container[data-parent="${checkbox.dataset.id}"]`);
+  container.style.display = checkbox.checked ? 'block' : 'none';
+  
+  if (checkbox.checked) {
+    container.querySelectorAll('.subtema').forEach(sub => sub.checked = true);
+  } else {
+    container.querySelectorAll('.subtema').forEach(sub => sub.checked = false);
+  }
+}
+
+// Naloži teme ob začetku
+window.addEventListener('DOMContentLoaded', napolniTemeTree);
 
 // ==================== SAFE JSON PARSE HELPER ====================
 function safeParseJson(value, defaultValue) {
@@ -91,7 +80,7 @@ function safeParseJson(value, defaultValue) {
   return defaultValue;
 }
 
-// ==================== GLAVNA FUNCIJA ZA PRIKAZ VPRAŠANJA ====================
+// ==================== GLAVNA FUNKCIJA ZA PRIKAZ VPRAŠANJA ====================
 function prikaziVprasanje() {
   const v = trenutnaVprasanja[trenutniIndex];
   const tip = v.tip_vprasanja || 'multiple_choice';
@@ -122,6 +111,11 @@ function prikaziVprasanje() {
 
 // ==================== MULTIPLE CHOICE ====================
 function prikaziMultipleChoice(v) {
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   const mapeCrk = [
     { uporabnik: "a", interni: "a", tekst: v.odgovor_a },
     { uporabnik: "b", interni: "b", tekst: v.odgovor_b },
@@ -131,6 +125,7 @@ function prikaziMultipleChoice(v) {
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     ${mapeCrk.map(m =>
       `<label><input type="radio" name="odgovor" value="${m.uporabnik}" data-interni="${m.interni}"> ${m.uporabnik}) ${escapeHtml(m.tekst)}</label>`
@@ -140,21 +135,27 @@ function prikaziMultipleChoice(v) {
 
 // ==================== TRUE/FALSE ====================
 function prikaziTrueFalse(v) {
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     <label><input type="radio" name="odgovor" value="drži" data-interni="true"> ✅ Drži</label><br>
     <label><input type="radio" name="odgovor" value="ne drži" data-interni="false"> ❌ Ne drži</label>
   `;
 }
 
-// ==================== ORDERING (VRSTNI RED) ====================
+// ==================== ORDERING ====================
 function prikaziOrdering(v) {
-  console.log("ORDERING vprašanje:", v);
-  console.log("json_data:", v.json_data);
-  console.log("elements:", v.json_data?.elements);
-  console.log("typeof:", typeof v.json_data?.elements);
-
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   let elementi = safeParseJson(v.json_data?.elements, []);
   
   if (elementi.length === 0) {
@@ -166,6 +167,7 @@ function prikaziOrdering(v) {
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${navodilo}</div>
     <div id="ordering-list" style="margin:15px 0;">
@@ -181,20 +183,31 @@ function prikaziOrdering(v) {
   initOrdering();
 }
 
-// ==================== FILL TEXT (DOPOLENI TEKST) ====================
+// ==================== FILL TEXT ====================
 function prikaziFillText(v) {
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   const warning = "⚠️ <strong>Pozor:</strong> Pazite na velike in male začetnice ter ne uporabljajte ločil (vejic, pik itd.).";
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${warning}</div>
     <input type="text" id="fill-input" placeholder="Vpiši odgovor..." style="width:100%; padding:12px; font-size:16px; border:2px solid #6d4aff; border-radius:8px; margin-top:10px;"/>
   `;
 }
 
-// ==================== MATCHING (POVEŽI) ====================
+// ==================== MATCHING ====================
 function prikaziMatching(v) {
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   let parovi = safeParseJson(v.json_data?.pairs, []);
   
   if (parovi.length === 0) {
@@ -207,6 +220,7 @@ function prikaziMatching(v) {
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ <strong>Opozorilo:</strong> Element na levi povežite s pripadajočim elementom na desni.</div>
     <div style="display:flex; justify-content:space-between; margin:20px 0; gap:20px;">
@@ -219,8 +233,13 @@ function prikaziMatching(v) {
   initMatching(leftItems, rightItems, parovi);
 }
 
-// ==================== DROPDOWN (IZBOR IZ MENIJA) ====================
+// ==================== DROPDOWN ====================
 function prikaziDropdown(v) {
+  const temaBar = `
+<div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
+  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+</div>
+`;
   let options = safeParseJson(v.json_data?.options, []);
   
   if (options.length === 0) {
@@ -232,6 +251,7 @@ function prikaziDropdown(v) {
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+    ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
     <select id="dropdown-select" style="width:100%; padding:12px; font-size:16px; border:2px solid #6d4aff; border-radius:8px; margin-top:10px;">
       <option value="">${escapeHtml(placeholder || 'Izberi odgovor...')}</option>
@@ -273,21 +293,9 @@ document.getElementById("naslednje-vprasanje").addEventListener("click", () => {
         return;
       }
 
-      console.log("ORDERING - elementi pred shranjevanjem:");
-      Array.from(orderingList).forEach((el, i) => {
-        console.log(
-          i,
-          el.textContent.trim(),
-          "original:",
-          el.getAttribute("data-original-index")
-        );
-      });
-
       izbranOdgovor = Array.from(orderingList)
         .map(el => el.getAttribute("data-original-index"))
         .join(',');
-
-      console.log("SHRANJEN ODGOVOR:", izbranOdgovor);
 
       break;
 
@@ -351,16 +359,8 @@ function prikaziRezultate() {
     } else if (tip === 'true_false') {
       jePravilno = o.izbranOdgovor === o.pravilenOdgovor.toString();
     } else if (tip === 'ordering') {
-      console.log("=== ORDERING ===");
-      console.log("Izbran:", o.izbranOdgovor);
-      console.log("Pravilen:", o.pravilenOdgovor);
-
       const mojRed = o.izbranOdgovor.split(',');
       const pravilenRed = o.pravilenOdgovor.split(',');
-
-      console.log("mojRed:", mojRed);
-      console.log("pravilenRed:", pravilenRed);
-
       jePravilno = JSON.stringify(mojRed) === JSON.stringify(pravilenRed);
     } else if (tip === 'fill_text') {
       jePravilno = o.izbranOdgovor.toLowerCase() === o.pravilenOdgovor.toLowerCase();
@@ -505,7 +505,7 @@ function initOrdering() {
       setTimeout(() => {
         item.style.opacity = '1';
         draggedItem = null;
-        updateOrderingIndices();
+        // updateOrderingIndices() - IZBRISANO!
       }, 0);
     });
 
@@ -532,31 +532,24 @@ function initMatching(leftItems, rightItems, parovi) {
   window.matchingAnswers = [];
 
   let selectedLeft = null;
-
-  // Sledi kateri elementi so že povezani
   const matchedLeft = new Set();
   const matchedRight = new Set();
 
-  // ==================== RENDER LEVI ====================
   document.getElementById('matching-left').innerHTML = leftItems.map(i =>
     `<div class="matching-item" data-id="${i.id}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${escapeHtml(i.text)}</div>`
   ).join("");
 
-  // ==================== RENDER DESNI ====================
   document.getElementById('matching-right').innerHTML = rightItems.map(i =>
     `<div class="matching-item" data-pair-id="${i.pairId}" style="padding:12px; margin:5px 0; background:#fff; border-radius:6px; cursor:pointer; border:2px solid #ddd;">${escapeHtml(i.text)}</div>`
   ).join("");
 
-  // ==================== KLIK NA LEVI ELEMENT ====================
   document.querySelectorAll('.matching-item[data-id]').forEach(item => {
     item.addEventListener('click', () => {
-      // Če je že povezan, razdruži ga!
       if (matchedLeft.has(item)) {
         razdruziMatch(item, 'left');
         return;
       }
 
-      // Ponastavi prejšnji izbor
       if (selectedLeft) {
         selectedLeft.style.borderColor = '#ddd';
         selectedLeft.style.backgroundColor = '#fff';
@@ -568,14 +561,11 @@ function initMatching(leftItems, rightItems, parovi) {
     });
   });
 
-  // ==================== KLIK NA DESNI ELEMENT ====================
   document.querySelectorAll('.matching-item[data-pair-id]').forEach(rightItem => {
     rightItem.addEventListener('click', () => {
       if (!selectedLeft) return;
 
-      // Če je desni že povezan, ne dovoli!
       if (matchedRight.has(rightItem)) {
-        // Kratek vizualni signal
         rightItem.style.borderColor = '#ff4444';
         setTimeout(() => {
           if (!matchedRight.has(rightItem)) {
@@ -587,37 +577,24 @@ function initMatching(leftItems, rightItems, parovi) {
         return;
       }
 
-      // POVEŽI (dovoljeno kakršenkoli par!)
       selectedLeft.style.backgroundColor = '#f0fff0';
       selectedLeft.style.borderColor = '#4caf50';
-
       rightItem.style.backgroundColor = '#f0fff0';
       rightItem.style.borderColor = '#4caf50';
 
-      // Shrani match
       window.matchingAnswers.push({
         left: selectedLeft.textContent.trim(),
         right: rightItem.textContent.trim()
       });
 
-      // Označi kot povezan
       matchedLeft.add(selectedLeft);
       matchedRight.add(rightItem);
-
-      console.log("MATCH DODAN:", {
-        left: selectedLeft.textContent.trim(),
-        right: rightItem.textContent.trim()
-      });
-
       selectedLeft = null;
     });
   });
 
-  // ==================== RAZDRUŽI MATCH ====================
   function razdruziMatch(item, side) {
     const leftText = item.textContent.trim();
-
-    // Najdi ta match v matchingAnswers
     const matchIndex = window.matchingAnswers.findIndex(m => 
       (side === 'left' && m.left === leftText) ||
       (side === 'right' && m.right === leftText)
@@ -626,13 +603,11 @@ function initMatching(leftItems, rightItems, parovi) {
     if (matchIndex !== -1) {
       const match = window.matchingAnswers[matchIndex];
 
-      // Najdni oba elementa v DOM
       const leftEl = Array.from(document.querySelectorAll('.matching-item[data-id]'))
         .find(el => el.textContent.trim() === match.left);
       const rightEl = Array.from(document.querySelectorAll('.matching-item[data-pair-id]'))
         .find(el => el.textContent.trim() === match.right);
 
-      // Ponastavi barve
       if (leftEl) {
         leftEl.style.borderColor = '#ddd';
         leftEl.style.backgroundColor = '#fff';
@@ -644,9 +619,7 @@ function initMatching(leftItems, rightItems, parovi) {
         matchedRight.delete(rightEl);
       }
 
-      // Odstrani iz matchingAnswers
       window.matchingAnswers.splice(matchIndex, 1);
-      console.log("MATCH RAZDRUŽEN:", match);
     }
   }
 }
