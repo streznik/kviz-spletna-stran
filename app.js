@@ -636,9 +636,19 @@ function prikaziNapako(opis) {
 
 // ==================== MATCHING HELPER ====================
 function initMatching(leftItems, rightItems, parovi) {
+  const colors = [
+  "#3b82f6", // modra
+  "#8b5cf6", // vijolična
+  "#10b981", // zelena
+  "#f97316", // oranžna
+  "#ef4444", // rdeča
+  "#06b6d4", // turkizna
+  "#eab308", // rumena
+];
   window.matchingAnswers = [];
 
   let selectedLeft = null;
+  let pairCounter = 0;
   const matchedLeft = new Set();
   const matchedRight = new Set();
 
@@ -684,10 +694,17 @@ function initMatching(leftItems, rightItems, parovi) {
         return;
       }
 
-      selectedLeft.style.backgroundColor = '#f0fff0';
-      selectedLeft.style.borderColor = '#4caf50';
-      rightItem.style.backgroundColor = '#f0fff0';
-      rightItem.style.borderColor = '#4caf50';
+      const color = colors[pairCounter % colors.length];
+
+      selectedLeft.style.backgroundColor = color + "22";
+      selectedLeft.style.borderColor = color;
+      selectedLeft.style.borderWidth = "3px";
+
+      rightItem.style.backgroundColor = color + "22";
+      rightItem.style.borderColor = color;
+      rightItem.style.borderWidth = "3px";
+
+      pairCounter++;
 
       window.matchingAnswers.push({
         left: selectedLeft.textContent.trim(),
