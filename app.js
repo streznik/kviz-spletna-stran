@@ -24,18 +24,23 @@ async function napolniTemeTree() {
     
     let html = '<h3>Izberi temo:</h3>';
     
-    temi.filter(t => t.parent_id === null).forEach(glavnaTema => {
-      html += `
+    temi
+      .filter(t => t.parent_id === null && t.vidna)
+      .forEach(glavnaTema => {
+      
+        html += `
         <div class="tema-group" style="margin:10px 0;">
           <label style="cursor:pointer; font-weight:bold;">
             <input type="checkbox" class="glavna-tema" data-id="${glavnaTema.id}" onchange="toggleSubteme(this)">
-            ${glavnaTema.ime} (+)
+            ${glavnaTema.ime} (${glavnaTema.stevilo_vprasanj}) (+)
           </label>
           <div class="subteme-container" style="margin-left:20px; display:none;" data-parent="${glavnaTema.id}">
-            ${temi.filter(t => t.parent_id === glavnaTema.id).map(sub => `
+            ${temi
+                .filter(t => t.parent_id === glavnaTema.id && t.vidna)
+                .map(sub => `
               <label style="cursor:pointer; display:block; padding:5px 0;">
                 <input type="checkbox" class="subtema tema" value="${sub.id}">
-                &nbsp;${escapeHtml(sub.ime)}
+                &nbsp;${escapeHtml(sub.ime)} (${sub.stevilo_vprasanj})
               </label>
             `).join('')}
           </div>
