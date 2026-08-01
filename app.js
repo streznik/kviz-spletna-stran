@@ -34,7 +34,7 @@ async function napolniTemeTree() {
           <div class="subteme-container" style="margin-left:20px; display:none;" data-parent="${glavnaTema.id}">
             ${temi.filter(t => t.parent_id === glavnaTema.id).map(sub => `
               <label style="cursor:pointer; display:block; padding:5px 0;">
-                <input type="checkbox" class="subtema tema" value="${sub.skratka}">
+                <input type="checkbox" class="subtema tema" value="${sub.id}">
                 &nbsp;${escapeHtml(sub.ime)}
               </label>
             `).join('')}
