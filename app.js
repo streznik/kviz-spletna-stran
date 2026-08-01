@@ -31,7 +31,11 @@ async function napolniTemeTree() {
         html += `
         <div class="tema-group" style="margin:10px 0;">
           <label style="cursor:pointer; font-weight:bold;">
-            <input type="checkbox" class="glavna-tema" data-id="${glavnaTema.id}" onchange="toggleSubteme(this)">
+            <input type="checkbox"
+                 class="glavna-tema tema"
+                 value="${glavnaTema.id}"
+                 data-id="${glavnaTema.id}"
+                 onchange="toggleSubteme(this)">
             ${glavnaTema.ime} (${glavnaTema.stevilo_vprasanj}) (+)
           </label>
           <div class="subteme-container" style="margin-left:20px; display:none;" data-parent="${glavnaTema.id}">
@@ -56,9 +60,15 @@ async function napolniTemeTree() {
 }
 
 function toggleSubteme(checkbox) {
-  const container = document.querySelector(`.subteme-container[data-parent="${checkbox.dataset.id}"]`);
+
+  console.log("Klik:", checkbox.checked, checkbox.value);
+
+  const container = document.querySelector(
+    `.subteme-container[data-parent="${checkbox.dataset.id}"]`
+  );
+
   container.style.display = checkbox.checked ? 'block' : 'none';
-  
+
   if (checkbox.checked) {
     container.querySelectorAll('.subtema').forEach(sub => sub.checked = true);
   } else {
