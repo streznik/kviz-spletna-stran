@@ -1,5 +1,5 @@
 // ✅ BREZ / na koncu!
-const WORKER_URL = "https://orange-cherry-7035.streznik.workers.dev";
+const WORKER_URL = "https://api.1471789.xyz";
 
 console.log("✅ Skript se je naložil!");
 
