@@ -199,7 +199,7 @@ function prikaziVprasanje() {
 function prikaziMultipleChoice(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   const mapeCrk = [
@@ -242,7 +242,7 @@ function prikaziMultipleChoice(v) {
 function prikaziTrueFalse(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   document.getElementById("vprasanje-prikaz").innerHTML = `
@@ -258,7 +258,7 @@ function prikaziTrueFalse(v) {
 function prikaziOrdering(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   let elementi = safeParseJson(v.json_data?.elements, []);
@@ -292,7 +292,7 @@ function prikaziOrdering(v) {
 function prikaziFillText(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   const warning = "⚠️ <strong>Pozor:</strong> Pazite na velike in male začetnice ter ne uporabljajte ločil (vejic, pik itd.).";
@@ -310,7 +310,7 @@ function prikaziFillText(v) {
 function prikaziMatching(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   let parovi = safeParseJson(v.json_data?.pairs, []);
@@ -342,7 +342,7 @@ function prikaziMatching(v) {
 function prikaziDropdown(v) {
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
-  📌 <strong>Tema:</strong> ${escapeHtml(v.tema || 'Neznano')}
+  📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
   let options = safeParseJson(v.json_data?.options, []);
@@ -454,69 +454,224 @@ function prikaziRezultate() {
 
   const napake = [];
   let pravilni = 0;
+  // statistika po temah
+  const statistikaTem = {};
 
   odgovori.forEach(o => {
-    const tip = o.vprasanje.tip_vprasanja || 'multiple_choice';
-    let jePravilno = false;
 
-    if (tip === 'multiple_choice') {
-      jePravilno = o.izbranOdgovor === o.pravilenOdgovor;
-    } else if (tip === 'true_false') {
-      jePravilno = o.izbranOdgovor === o.pravilenOdgovor.toString();
-    } else if (tip === 'ordering') {
-      const mojRed = o.izbranOdgovor.split(',');
-      const pravilenRed = o.pravilenOdgovor.split(',');
-      jePravilno = JSON.stringify(mojRed) === JSON.stringify(pravilenRed);
-    } else if (tip === 'fill_text') {
-      jePravilno = o.izbranOdgovor.toLowerCase() === o.pravilenOdgovor.toLowerCase();
-    } else if (tip === 'matching') {
-      const mojeParje = o.izbranOdgovor ? o.izbranOdgovor.split(';').sort() : [];
-      const pravilnoParje = o.pravilenOdgovor ? o.pravilenOdgovor.split(';').sort() : [];
-      jePravilno = JSON.stringify(mojeParje) === JSON.stringify(pravilnoParje);
-    } else if (tip === 'dropdown') {
-      jePravilno = o.izbranOdgovor === o.pravilenOdgovor;
-    }
+  const tip = o.vprasanje.tip_vprasanja || "multiple_choice";
+  let jePravilno = false;
 
-    if (jePravilno) pravilni++;
-    else napake.push(o);
-  });
+  if (tip === "multiple_choice") {
 
-  document.getElementById("koncni-rezultat").textContent =
-    `Pravilno si odgovoril/-a na ${pravilni} od ${odgovori.length} vprašanj.`;
+    jePravilno = o.izbranOdgovor === o.pravilenOdgovor;
 
-  let html = "";
+  } else if (tip === "true_false") {
 
-  if (napake.length > 0) {
-    html += '<div class="napake-container">';
-    html += napake.map(o => `
-      <div style="border:1px solid red; padding:10px; margin:10px 0; background:#fff3f3;">
-        <strong>${escapeHtml(o.vprasanje.vprasanje)}</strong>
-        ${oblikujNapako(o)}
-      </div>
-    `).join("");
-    html += '</div>';
+    jePravilno = o.izbranOdgovor === o.pravilenOdgovor.toString();
 
-    html += `
-      <div style="background:#f0f8ff; border:2px dashed #6d4aff; padding:15px; margin:20px 0; text-align:center; border-radius:8px;">
-        <p style="color:#666; margin:0;">
-          📩 <strong>Ste našli napako v kvizu?</strong><br>
-          Pišite nam na: <a href="mailto:thaw-pretzel-take@duck.com" style="color:#6d4aff; font-weight:bold;">thaw-pretzel-take@duck.com</a>
-        </p>
-      </div>
-    `;
-  } else {
-    html += '<div style="background:#f0fff0; border:2px solid #4caf50; padding:15px; margin:20px 0; text-align:center; border-radius:8px;"><p>Vsi odgovori so bili pravilni! 🎉</p></div>';
+  } else if (tip === "ordering") {
+
+    const mojRed = o.izbranOdgovor.split(",");
+    const pravilenRed = o.pravilenOdgovor.split(",");
+
+    jePravilno =
+      JSON.stringify(mojRed) === JSON.stringify(pravilenRed);
+
+  } else if (tip === "fill_text") {
+
+    jePravilno =
+      o.izbranOdgovor.toLowerCase() ===
+      o.pravilenOdgovor.toLowerCase();
+
+  } else if (tip === "matching") {
+
+    const moje = o.izbranOdgovor
+      ? o.izbranOdgovor.split(";").sort()
+      : [];
+
+    const pravilne = o.pravilenOdgovor
+      ? o.pravilenOdgovor.split(";").sort()
+      : [];
+
+    jePravilno =
+      JSON.stringify(moje) === JSON.stringify(pravilne);
+
+  } else if (tip === "dropdown") {
+
+    jePravilno = o.izbranOdgovor === o.pravilenOdgovor;
+
   }
 
+  if (jePravilno)
+    pravilni++;
+  else
+    napake.push(o);
+
+  // =============================
+  // STATISTIKA PO TEMAH
+  // =============================
+
+  const pot = o.vprasanje.tema_pot || [];
+
+  pot.forEach((ime, nivo) => {
+
+    const kljuc = pot.slice(0, nivo + 1).join(" → ");
+
+    if (!statistikaTem[kljuc]) {
+
+      statistikaTem[kljuc] = {
+        nivo,
+        ime,
+        skupaj: 0,
+        pravilno: 0
+      };
+
+    }
+
+    statistikaTem[kljuc].skupaj++;
+
+    if (jePravilno)
+      statistikaTem[kljuc].pravilno++;
+
+  });
+
+});
+
+  document.getElementById("koncni-rezultat").textContent =
+  `Pravilno si odgovoril/-a na ${pravilni} od ${odgovori.length} vprašanj.`;
+
+// =====================
+// STATISTIKA PO TEMAH
+// =====================
+
+let html = `
+<h3 style="margin-top:25px;">📊 Statistika po temah</h3>
+`;
+
+Object.values(statistikaTem)
+  .sort((a, b) => a.nivo - b.nivo || a.ime.localeCompare(b.ime))
+  .forEach(t => {
+
+    const odstotek = Math.round(t.pravilno / t.skupaj * 100);
+
+    let naziv = "";
+
+    if (odstotek === 100)
+      naziv = "Izjemno";
+    else if (odstotek >= 90)
+      naziv = "Odlično";
+    else if (odstotek >= 80)
+      naziv = "Zelo dobro";
+    else if (odstotek >= 65)
+      naziv = "Dobro";
+    else if (odstotek >= 50)
+      naziv = "Zadostno";
+    else
+      naziv = "Priporočamo ponovitev";
+
+    html += `
+      <div style="
+          margin-left:${t.nivo * 28}px;
+          margin-bottom:12px;
+      ">
+
+        <div style="
+    font-weight:bold;
+    font-size:${t.nivo === 0 ? "1.1em" : "1em"};
+    color:${t.nivo === 0 ? "#3f2ab8" : "#222"};
+">
+          ${escapeHtml(t.ime)}
+(${t.pravilno}/${t.skupaj})
+• ${odstotek} %
+– ${naziv}
+        </div>
+
+        <div style="
+            height:10px;
+            background:#ddd;
+            border-radius:5px;
+            overflow:hidden;
+            margin-top:4px;
+        ">
+          <div style="
+              width:${odstotek}%;
+              height:100%;
+              background:${
+    odstotek >= 90 ? "#4caf50" :
+    odstotek >= 80 ? "#8bc34a" :
+    odstotek >= 65 ? "#ffc107" :
+    odstotek >= 50 ? "#ff9800" :
+    "#f44336"
+};
+          "></div>
+        </div>
+
+      </div>
+    `;
+  });
+
+html += "<hr style='margin:30px 0;'>";
+
+// =====================
+// NAPAKE
+// =====================
+
+if (napake.length > 0) {
+
+  html += "<h3>❌ Napačni odgovori</h3>";
+
+  html += '<div class="napake-container">';
+
+  html += napake.map(o => `
+    <div style="border:1px solid red; padding:10px; margin:10px 0; background:#fff3f3;">
+      <strong>${escapeHtml(o.vprasanje.vprasanje)}</strong>
+      ${oblikujNapako(o)}
+    </div>
+  `).join("");
+
+  html += "</div>";
+
   html += `
-    <div style="text-align:center; margin-top:25px;">
-      <button onclick="location.reload()" style="background:#6d4aff; color:white; border:none; padding:12px 30px; font-size:16px; border-radius:8px; cursor:pointer;">
-        🔄 Ponovi kviz
-      </button>
+    <div style="background:#f0f8ff; border:2px dashed #6d4aff; padding:15px; margin:20px 0; text-align:center; border-radius:8px;">
+      <p style="color:#666; margin:0;">
+        📩 <strong>Ste našli napako v kvizu?</strong><br>
+        Pišite nam na:
+        <a href="mailto:thaw-pretzel-take@duck.com"
+           style="color:#6d4aff;font-weight:bold;">
+           thaw-pretzel-take@duck.com
+        </a>
+      </p>
     </div>
   `;
 
-  document.getElementById("napake-prikaz").innerHTML = html;
+} else {
+
+  html += `
+    <div style="background:#f0fff0; border:2px solid #4caf50; padding:15px; margin:20px 0; text-align:center; border-radius:8px;">
+      <p>🎉 Vsi odgovori so bili pravilni!</p>
+    </div>
+  `;
+}
+
+html += `
+<div style="text-align:center; margin-top:25px;">
+  <button onclick="location.reload()"
+      style="
+        background:#6d4aff;
+        color:white;
+        border:none;
+        padding:12px 30px;
+        font-size:16px;
+        border-radius:8px;
+        cursor:pointer;
+      ">
+    🔄 Ponovi kviz
+  </button>
+</div>
+`;
+
+document.getElementById("napake-prikaz").innerHTML = html;
 }
 
 // ==================== OBLIKUJ NAPAKO ====================
