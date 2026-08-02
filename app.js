@@ -212,7 +212,26 @@ function prikaziMultipleChoice(v) {
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     ${temaBar}
-    <p>${escapeHtml(v.vprasanje)}</p>
+    ${v.slika ? `
+<div style="text-align:center; margin:15px 0;">
+  <img
+    src="images/${v.slika}"
+    alt="Slika vprašanja"
+    onclick="window.open(this.src,'_blank')"
+    style="
+      max-width:250px;
+      max-height:250px;
+      border-radius:10px;
+      border:2px solid #ddd;
+      cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,.2);
+    ">
+    <br>
+    <small style="color:#666;">Klikni za povečavo</small>
+</div>
+` : ""}
+
+<p>${escapeHtml(v.vprasanje)}</p>
     ${mapeCrk.map(m =>
       `<label><input type="radio" name="odgovor" value="${m.uporabnik}" data-interni="${m.interni}"> ${m.uporabnik}) ${escapeHtml(m.tekst)}</label>`
     ).join("")}
@@ -502,6 +521,20 @@ function prikaziRezultate() {
 
 // ==================== OBLIKUJ NAPAKO ====================
 function oblikujNapako(o) {
+  const slikaHtml = o.vprasanje.slika ? `
+  <div style="text-align:center; margin:15px 0;">
+    <img
+      src="images/${o.vprasanje.slika}"
+      style="
+        max-width:220px;
+        max-height:220px;
+        border-radius:10px;
+        border:2px solid #ddd;
+        box-shadow:0 2px 8px rgba(0,0,0,.2);
+      ">
+  </div>
+  ` : "";
+  
   const tip = o.vprasanje.tip_vprasanja || 'multiple_choice';
 
   if (tip === 'multiple_choice') {
@@ -539,6 +572,8 @@ function oblikujNapako(o) {
     const pravilenPrikaz = polje_do_prikaza[pravilnoPolje];
 
     return `
+      ${slikaHtml}
+
       Tvoj odgovor: ${tvojPrikaz} — ${escapeHtml(tvojTekst)}<br>
       Pravilen odgovor: ${pravilenPrikaz} — ${escapeHtml(pravilenTekst)}
     `;
