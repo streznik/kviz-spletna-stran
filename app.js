@@ -262,6 +262,13 @@ function prikaziOrdering(v) {
 </div>
 `;
   let elementi = safeParseJson(v.json_data?.elements, []);
+  // premešaj elemente, vendar ohrani originalni indeks
+elementi = elementi
+    .map((text, idx) => ({
+        text,
+        originalIndex: idx
+    }))
+    .sort(() => Math.random() - 0.5);
   
   if (elementi.length === 0) {
     console.warn("Ordering vprašanje brez elementov!", v);
@@ -276,11 +283,15 @@ function prikaziOrdering(v) {
     <p>${escapeHtml(v.vprasanje)}</p>
     <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${navodilo}</div>
     <div id="ordering-list" style="margin:15px 0;">
-      ${elementi.map((el, idx) => 
-        `<div class="ordering-item" draggable="true" data-original-index="${idx}" style="padding:12px; margin:8px 0; background:#fff; border-radius:6px; cursor:move; border:2px solid #ddd; font-weight:500;">
-          <span style="color:#666; margin-right:10px;">${idx + 1}.</span> ${escapeHtml(el)}
-        </div>`
-      ).join("")}
+      ${elementi.map((el, idx) =>
+    `<div class="ordering-item"
+        draggable="true"
+        data-original-index="${el.originalIndex}"
+        style="padding:12px; margin:8px 0; background:#fff; border-radius:6px; cursor:move; border:2px solid #ddd; font-weight:500;">
+        <span style="color:#666; margin-right:10px;">${idx + 1}.</span>
+        ${escapeHtml(el.text)}
+    </div>`
+).join("")}
     </div>
     <small style="color:#666;">💡 Klikni in povleci elemente, da jih preurediš.</small>
   `;
