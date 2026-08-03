@@ -87,8 +87,15 @@ if (startButton) {
   startButton.addEventListener("click", async () => {
     console.log("👆 Gumb kliknjen!");
 
-        izbraneTeme = Array.from(document.querySelectorAll(".tema:checked"))
-      .map(cb => cb.value);
+        izbraneTeme = Array.from(
+  document.querySelectorAll(".subtema:checked")
+).map(cb => cb.value);
+
+if (izbraneTeme.length === 0) {
+  izbraneTeme = Array.from(
+    document.querySelectorAll(".glavna-tema:checked")
+  ).map(cb => cb.value);
+}
 
     console.log("📋 Izbrane TEME:", izbraneTeme);
 
