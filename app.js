@@ -282,7 +282,7 @@ elementi = elementi
     elementi = ["Napaka: Ni elementov"];
   }
 
-  const navodilo = "⚠️ <strong>Opozorilo:</strong> 1 = najstarejši dogodek, 4 = najmlajši dogodek.<br>Povleci elemente v pravilen kronološki vrstni red.";
+  const navodilo = "Na 1. mestu je najstarejši dogodek, na zadnjem mestu je najmlajši dogodek.<br>";
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
@@ -313,7 +313,7 @@ function prikaziFillText(v) {
   📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
-  const warning = "⚠️ <strong>Pozor:</strong> Pazite na velike in male začetnice ter ne uporabljajte ločil (vejic, pik itd.).";
+  const warning = "Pazite na velike in male začetnice ter ne uporabljajte ločil (vejic, pik itd.).";
 
   document.getElementById("vprasanje-prikaz").innerHTML = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
@@ -345,7 +345,7 @@ function prikaziMatching(v) {
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
-    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ <strong>Opozorilo:</strong> Element na levi povežite s pripadajočim elementom na desni.</div>
+    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ Element na levi povežite s pripadajočim elementom na desni.</div>
     <div style="display:flex; justify-content:space-between; margin:20px 0; gap:20px;">
       <div id="matching-left" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
       <div id="matching-right" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
