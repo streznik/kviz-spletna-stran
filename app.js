@@ -326,33 +326,69 @@ function prikaziFillText(v) {
 
 // ==================== MATCHING ====================
 function prikaziMatching(v) {
+
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
   📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
+
   let parovi = safeParseJson(v.json_data?.pairs, []);
-  
+
   if (parovi.length === 0) {
     console.warn("Matching vprašanje brez parov!", v);
-    parovi = [{left: "Napaka", right: "Ni parov"}];
+    parovi = [{
+      left: "Napaka",
+      right: "Ni parov"
+    }];
   }
-  
-  const leftItems = parovi.map((p, i) => ({ text: p.left, id: i })).sort(() => Math.random() - 0.5);
-  const rightItems = parovi.map((p, i) => ({ text: p.right, pairId: i })).sort(() => Math.random() - 0.5);
+
+  const leftItems = parovi
+    .map((p, i) => ({
+      text: p.left,
+      id: i
+    }))
+    .sort(() => Math.random() - 0.5);
+
+  let rightItems;
+
+  do {
+
+    rightItems = parovi
+      .map((p, i) => ({
+        text: p.right,
+        pairId: i
+      }))
+      .sort(() => Math.random() - 0.5);
+
+  } while (
+    rightItems.every((item, index) =>
+      item.pairId === leftItems[index].id
+    )
+  );
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
     ${temaBar}
     <p>${escapeHtml(v.vprasanje)}</p>
-    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">⚠️ Element na levi povežite s pripadajočim elementom na desni.</div>
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">
+      Element na levi povežite s pripadajočim elementom na desni.
+    </div>
+
     <div style="display:flex; justify-content:space-between; margin:20px 0; gap:20px;">
-      <div id="matching-left" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
-      <div id="matching-right" style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;"></div>
+      <div id="matching-left"
+           style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;">
+      </div>
+
+      <div id="matching-right"
+           style="flex:1; padding:10px; background:#f9f9f9; border-radius:8px;">
+      </div>
     </div>
   `;
+
   document.getElementById("vprasanje-prikaz").innerHTML = html;
-  
+
   initMatching(leftItems, rightItems, parovi);
 }
 
