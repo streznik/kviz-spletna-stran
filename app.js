@@ -263,46 +263,81 @@ function prikaziTrueFalse(v) {
 
 // ==================== ORDERING ====================
 function prikaziOrdering(v) {
+
   const temaBar = `
 <div style="background:#e8f4fd; border-left:4px solid #6d4aff; padding:10px 15px; margin-bottom:15px; border-radius:4px; font-size:0.9em;">
   📌 <strong>Tema:</strong> ${escapeHtml((v.tema_pot || []).join(" → "))}
 </div>
 `;
+
   let elementi = safeParseJson(v.json_data?.elements, []);
-  // premešaj elemente, vendar ohrani originalni indeks
-elementi = elementi
-    .map((text, idx) => ({
-        text,
-        originalIndex: idx
-    }))
-    .sort(() => Math.random() - 0.5);
-  
+
   if (elementi.length === 0) {
     console.warn("Ordering vprašanje brez elementov!", v);
     elementi = ["Napaka: Ni elementov"];
   }
 
-  const navodilo = "Na 1. mestu je najstarejši dogodek, na zadnjem mestu je najmlajši dogodek.<br>";
+  // Pripravi elemente z originalnim indeksom
+  const original = elementi.map((text, idx) => ({
+    text,
+    originalIndex: idx
+  }));
+
+  let shuffled;
+
+  // Poskrbi, da vrstni red ni popolnoma enak originalnemu
+  do {
+
+    shuffled = [...original].sort(() => Math.random() - 0.5);
+
+  } while (
+    shuffled.every((el, idx) => el.originalIndex === idx)
+    && shuffled.length > 1
+  );
+
+  const navodilo =
+    "Na prvem mestu naj bo najstarejši dogodek, na zadnjem mestu pa naj bo najmlajši dogodek.<br>";
 
   let html = `
     <h3>Vprašanje ${trenutniIndex + 1} od ${trenutnaVprasanja.length}</h3>
+
     ${temaBar}
+
     <p>${escapeHtml(v.vprasanje)}</p>
-    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">${navodilo}</div>
-    <div id="ordering-list" style="margin:15px 0;">
-      ${elementi.map((el, idx) =>
-    `<div class="ordering-item"
-        draggable="true"
-        data-original-index="${el.originalIndex}"
-        style="padding:12px; margin:8px 0; background:#fff; border-radius:6px; cursor:move; border:2px solid #ddd; font-weight:500;">
-        <span style="color:#666; margin-right:10px;">${idx + 1}.</span>
-        ${escapeHtml(el.text)}
-    </div>`
-).join("")}
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px 0; border-radius:5px; font-size:0.9em;">
+      ${navodilo}
     </div>
-    <small style="color:#666;">💡 Klikni in povleci elemente, da jih preurediš.</small>
+
+    <div id="ordering-list" style="margin:15px 0;">
+
+      ${shuffled.map((el, idx) => `
+
+        <div
+          class="ordering-item"
+          draggable="true"
+          data-original-index="${el.originalIndex}"
+          style="padding:12px; margin:8px 0; background:#fff; border-radius:6px; cursor:move; border:2px solid #ddd; font-weight:500;">
+
+          <span style="color:#666; margin-right:10px;">
+            ${idx + 1}.
+          </span>
+
+          ${escapeHtml(el.text)}
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+    <small style="color:#666;">
+      💡 Klikni in povleci elemente, da jih preurediš.
+    </small>
   `;
+
   document.getElementById("vprasanje-prikaz").innerHTML = html;
+
   initOrdering();
 }
 
